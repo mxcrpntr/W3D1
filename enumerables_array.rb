@@ -88,5 +88,6 @@ class Array
         end
         newarr
     end
+    def factors
 end
 
