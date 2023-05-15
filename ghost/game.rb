@@ -11,11 +11,7 @@ class Game
         hash = Hash.new(Array.new(0))
         lines = File.readlines('dictionary.txt').map(&:chomp)
         lines.each do |line|
-           arr = []
-           (0...line.length).each do |i|
-                arr << line[0..i]
-            end
-           arr.each {|str| hash[str] << line}
+           hash[line.length] << line
         end
         @dictionary = hash
         @losses = Hash.new(0)
@@ -32,11 +28,11 @@ class Game
     def take_turn(player)
         letter = player.guess
         if valid_play?(letter)
-            @fragment += letter
+            @fragment += letter.downcase
         else
             letter = player.alert_invalid_guess
             if valid_play?(letter)
-                @fragment += letter
+                @fragment += letter.downcase
             else
                 puts "You lost your turn, #{@current_player.name}, and have gained a punishment letter!"
                 @losses[@current_player] += 1
@@ -45,30 +41,34 @@ class Game
     end
     def valid_play?(str)
         alpha = ("a".."z").to_a
-        if !alpha.include?(str) || str.length != 1
+        if !alpha.include?(str.downcase) || str.length != 1
             return false
         else
-            return @dictionary.has_key?(@fragment + str.downcase)
+            frag = @fragment + str.downcase
+            @dictionary[frag.length].each do |word|
+                return true if word[0...frag.length] == frag
+            end
+            return false
         end
     end
     def play_round
         puts "Let's begin a new round!"
-        while !round_over?
+        alpha = ("a".."z").to_a
+        while alpha.any? {|letter| valid_play?(letter)}
             take_turn(@current_player)
             puts "The string is currently: #{@fragment}"
             next_player!
         end
-        if !game_over?
-            @losses[@current_player] += 1
-            @fragment = ""
-            self.play_round
-        else
-            "The game is over. #{@current_player.name} has lost."
-        end
+        puts "This round is over. #{@previous_player.name} has lost the round."
+        @fragment = ""
     end
-    def round_over?
-        alpha = ("a".."z").to_a
-        alpha.all? {|char| !@dictionary.has_key?(@fragment + char)}
+    def run
+        while !game_over?
+            play_round
+            @losses[@previous_player] += 1
+            puts "Currently, #{@player_1.name} has #{"GHOST"[0...@losses[@player_1]]} and #{@player_2.name} has #{"GHOST"[0...@losses[@player_2]]}."
+        end
+        puts "The game is over. #{@previous_player.name} has lost."
     end
     def game_over?
         @losses.has_value?(5)

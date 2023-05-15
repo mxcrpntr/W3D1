@@ -4,7 +4,7 @@ class Player
         @name = name
     end
     def guess
-        print "Enter a new letter: "
+        print "Enter a new letter, #{name}: "
         gets.chomp
     end
     def alert_invalid_guess
