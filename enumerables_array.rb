@@ -71,6 +71,22 @@ class Array
         end 
         newarr
     end 
-
+    def my_join(str="")
+        newstr = ""
+        self.each_with_index do |el,i|
+            newstr += el.to_s
+            newstr += str if i != (self.length - 1)
+        end
+        return newstr
+    end
+    def my_reverse
+        newarr = []
+        i = self.length - 1
+        while i >= 0
+            newarr << self[i]
+            i -= 1
+        end
+        newarr
+    end
 end
 
